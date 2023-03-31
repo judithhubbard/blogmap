@@ -1,2 +1,10 @@
 # ID URL Title words # -r -RJ etc tectoplot commands
 1 https://earthquakeinsights.blogspot.com/search/label/2023%20Turkey-Syria%20earthquake 2023 Turkey-Syria Earthquake # -r 35 40 35 39
+2 https://earthquakeinsights.blogspot.com/search/label/Chile Chile -r CL
+3 https://earthquakeinsights.blogspot.com/search/label/Turkey Turkey -r TR
+4 https://earthquakeinsights.blogspot.com/search/label/Syria Syria -r SY
+5 https://earthquakeinsights.blogspot.com/search/label/South%20America South America -r -82-33.6 -56.4 12
+6 https://earthquakeinsights.blogspot.com/search/label/Afghanistan Afghanistan -r AF
+7 https://earthquakeinsights.blogspot.com/search/label/Ecuador Ecuador -r EC
+8 https://earthquakeinsights.blogspot.com/search/label/Gaziantep Gaziantep -r 36.8 37.5 36.8 37.2
+9 https://earthquakeinsights.blogspot.com/search/label/Adana Adana -r 34.9 35.6 36.8 37.2

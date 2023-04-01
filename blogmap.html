@@ -311,7 +311,7 @@
             console.log(props);
             this._div.innerHTML = '<h4>Blog posts per country</h4>' +  (props ?
                 '<b>' + props.feature.properties.name + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? '' : ' - click to read') )
-                : 'hover to reveal');
+                : '');
         };
 
         info.addTo(map);

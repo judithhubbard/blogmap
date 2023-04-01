@@ -28,6 +28,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
+    <!-- <script src="https://tectoplot.blogspot.com/feeds/posts/summary?alt=json-in-script&max-results=0&callback=cat"></script> -->
 
 	<style>
 		html, body {
@@ -40,9 +41,12 @@
 			max-width: 100%;
 			max-height: 100%;
 		}
-	</style>
+        .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
+        .legend { text-align: left; line-height: 14px; color: #555; } .legend i { width: 30px; height: 14px; float: left; margin-right: 8px; opacity: 0.7; }</style>
 
+	</style>
 </head>
+
 <body>
 
 <div id="map" style="width: 100%; height: 400px;"></div>
@@ -51,56 +55,16 @@
 <script>
 
     var myblogregions
+    var info = L.control();
 
     <!-- Define some functions -->
 
-    function highlightFeature(e) {
-        var layer = e.target;
-
-        layer.setStyle({
-            weight: 3,
-            color: 'red',
-            dashArray: '',
-        });
-
-        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
-            layer.bringToFront();
-        }
-    }
-
-    function resetHighlight(e) {
-        var layer = e.target;
-
-        layer.setStyle({
-            weight: 1.5,
-            color: 'blue',
-            dashArray: '',
-        });
-    }
-
-    function zoomToFeature(e) {
-        map.fitBounds(e.target.getBounds());
-    }
-
-    function navigate(e, l) {
-        // console.log(e)
-        var url = e.properties.url;
-        console.log("navigating to")
-        window.location.href=url;
-    }
-
-    function onEachFeature(feature, layer) {
-        layer.on({
-            mouseover: highlightFeature,
-            mouseout: resetHighlight,
-            click: navigate
-        });
-    }
 
     <!-- Load GeoJSON data from remote URL using Ajax -->
     // Add AJAX request for data
 
     /* DATA REQUESTS */
+
     var blogregions = $.ajax({
         url: "https://raw.githubusercontent.com/judithhubbard/blogmap/master/blogregions.geojson",
         dataType: "json",
@@ -110,19 +74,99 @@
         }
     });
 
+    // function cat(json) { //get categories of blog & sort them
+    //     var label = json.feed.category;
+    //     var lst=[];
+    //     for (i=0; i<label.length; i++){
+    //       lst[i] = label[i].term ;  
+    //     }
+    //     alert(lst);  //use any sort if you need that 
+    // }
+
+    function getColor(d) {
+        return d > 20 ? '#BD0026' :
+            d > 5  ? '#FD8D3C' :
+            d > 1   ? '#FED976' :
+            d > 0   ? '#FFEDA0' :
+                      '#FFFFFF';
+    }
+
+    function setStyle(feature) {
+        console.log("tags " + feature.properties.name + " are a " + feature.properties.numtags);
+        return {
+            fillColor: getColor(feature.properties.numtags),
+            weight: 1,
+            // opacity: 1,
+            color: 'gray',
+            fillOpacity: 1
+        };
+    }
+
+    function highlightFeature(e) {
+        const layer = e.target;
+
+        layer.setStyle({
+            weight: 3,
+            fillOpacity: 0.5
+        });
+
+        if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+            layer.bringToFront();
+        }
+
+        console.log(layer);
+        info.update(layer);
+    }
+
+    function resetHighlight(e) {
+        const layer = e.target;
+
+        layer.setStyle({
+            weight: 1,
+            fillOpacity: 1
+        });
+
+        // if (!L.Browser.ie && !L.Browser.opera && !L.Browser.edge) {
+        //     layer.bringToFront();
+        // }
+
+        // info.update();
+
+    }
+
+    <!-- Countries, low point count geoJSON -->
+    var countryregions = $.ajax({
+        url: "https://raw.githubusercontent.com/ahalota/Leaflet.CountrySelect/master/countries.geo.json",
+        dataType: "json",
+        success: console.log("Country data successfully loaded."),
+        error: function(xhr) {
+            alert(`countries: ${xhr.statusText}`);
+        }
+    });
+
+    var bloggerdata = $.ajax({
+        url: "https://tectoplot.blogspot.com/feeds/posts/default?alt=json&max-results=0",
+        dataType: "json",
+        success: console.log("Blogger data successfully loaded"),
+        error: function(xhr) {
+            alert(`bloggerdata: ${xhr.statusText}`);
+        }
+    });
+
     /* when().done() SECTION*/
     // Add the variable for each of your AJAX requests to $.when()
-    $.when(blogregions).done(function() {
+    $.when(blogregions, countryregions, bloggerdata).done(function() {
 
         var map = L.map("map", {
             zoomSnap : 1
         }).setView([0, 0], 1);
 
-        var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-	        maxZoom: 19,
-	        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        // var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+	    //     maxZoom: 19,
+	    //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // }).addTo(map);
 
+      
         // Google Map Layer
 
         // var googleStreets = L.tileLayer('http://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',{
@@ -156,31 +200,92 @@
 
         // L.control.layers(baseLayers).addTo(map);
 
-        // Add requested external GeoJSON to map
-        myblogregions = L.geoJSON(blogregions.responseJSON, {
-            fillOpacity: 0,
-            color: 'blue',
-            weight: 1.5,
-            onEachFeature: function(feature, featureLayer) {
-                // ' target="_blank" +
 
-                // featureLayer.bindPopup('<a href="' + feature.properties.url + '"' + '>' +  'Go to ' + feature.properties.title + '</a>');
-                featureLayer.bindTooltip(feature.properties.title).openTooltip();
-                if (window.location.href == feature.properties.url) {
-                    console.log("URL matches with ID " + feature.properties.id);
-                    map.fitBounds(featureLayer.getBounds());
-                }
+        // cat(bloggerdata.responseJSON);
+
+        // var labelText = {};
+        
+        // $(".list-label-widget-content a").each(function (i, el) {
+        //     labelText[i] = $(el).text();
+        //     console.log(Number(labelText[i].match(/\d+/g))); 
+        //     console.log(labelText[i].match(/[a-zA-Z]+/g));
+        // });
+
+        // Add requested external GeoJSON to map
+        var mycountryregions;
+        mycountryregions = L.geoJSON(countryregions.responseJSON, {
+            // fillOpacity: 0,
+            // color: 'green',
+            // weight: 0,
+            style: setStyle,
+            onEachFeature: function(feature, featureLayer) {
+                
+                var labelText;
+                var labelNum;
+
+                feature.properties.numtags=0;
+
+                $(".list-label-widget-content a").each(function (i, el) {
+                    // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
+                    labelText_t = $(el).text();
+                    labelNum=Number(labelText_t.match(/\d+/g)); 
+                    labelText=labelText_t.match(/[a-zA-Z]+/g);
+
+                    // Update the feature.properties.numtags value with the number of labels
+                    if (labelText == feature.properties.name) {
+                        console.log("Country" + feature.properties.name + "has" + labelNum + "tags");
+                        feature.properties.numtags=labelNum;
+                    }
+
+                });
+                
                 featureLayer.on({
                     mouseover: highlightFeature,
                     mouseout: resetHighlight,
                 });
+
+                // ' target="_blank" +
+
+                // featureLayer.bindPopup('<a href="' + feature.properties.url + '"' + '>' +  'Go to ' + feature.properties.title + '</a>');
+                // featureLayer.bindTooltip(feature.properties.name).openTooltip();
             }
         }).addTo(map).on('click', function (e) {
-            console.log(e);
-            console.log(e.layer.feature);
-            console.log(e.layer.feature.properties);
-            window.location.href=e.layer.feature.properties.url;
+            // console.log(e)
+            // console.log(e.layer)
+            if (e.layer.feature.properties.numtags != 0) {
+                window.location.href="https://earthquakeinsights.blogspot.com/search/label/" + e.layer.feature.properties.name;
+            }
         });
+
+        // var cartoDB_Labels = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}{r}.png', {
+        //     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        //     subdomains: 'abcd',
+        //     transparent: true,
+        //     maxZoom: 5
+        // }).addTo(map);
+
+        // var myblogregions;
+        // myblogregions = L.geoJSON(blogregions.responseJSON, {
+        //     fillOpacity: 0,
+        //     color: 'blue',
+        //     weight: 1.5,
+        //     onEachFeature: function(feature, featureLayer) {
+        //         // ' target="_blank" +
+
+        //         // featureLayer.bindPopup('<a href="' + feature.properties.url + '"' + '>' +  'Go to ' + feature.properties.title + '</a>');
+        //         featureLayer.bindTooltip(feature.properties.title).openTooltip();
+        //         if (window.location.href == feature.properties.url) {
+        //             console.log("URL matches with ID " + feature.properties.id);
+        //             map.fitBounds(featureLayer.getBounds());
+        //         }
+        //     }
+        // }).addTo(map).on('click', function (e) {
+        //     console.log(e);
+        //     console.log(e.layer.feature);
+        //     console.log(e.layer.feature.properties);
+        //     window.location.href=e.layer.feature.properties.url;
+        // });
+
 
         L.easyButton('fa-globe', function(btn, map){
             map.setView([0,0], 1);
@@ -189,6 +294,54 @@
         L.easyButton('fa-home', function(btn, map){
             window.location.href="https://earthquakeinsights.blogspot.com/"
         }).addTo(map);
+
+
+        var resetcountrystyles = function () {
+            mycountryregions.setStyle(setStyle);
+        };
+
+        info.onAdd = function (map) {
+            this._div = L.DomUtil.create('div', 'info'); // create a div with a class "info"
+            this.update();
+            return this._div;
+        };
+
+        // method that we will use to update the control based on feature properties passed
+        info.update = function (props) {
+            console.log(props);
+            this._div.innerHTML = '<h4>Blog posts per country</h4>' +  (props ?
+                '<b>' + props.feature.properties.name + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? '' : ' - click to read') )
+                : 'hover to reveal');
+        };
+
+        info.addTo(map);
+
+
+
+        var legend = L.control({position: 'bottomright'});
+
+        legend.onAdd = function (map) {
+
+            var div = L.DomUtil.create('div', 'info legend'),
+                grades = [0, 1, 5, 20],
+                labels = [];
+
+            // loop through our density intervals and generate a label with a colored square for each interval
+            for (var i = 0; i < grades.length; i++) {
+                div.innerHTML +=
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+            }
+
+            return div;
+        };
+
+
+        legend.addTo(map);
+        
+        // Update the country styles as we have updated the numtags property after first styling
+        map.whenReady(resetcountrystyles);
+
 
     });
 

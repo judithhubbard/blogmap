@@ -36,7 +36,6 @@
 			margin: 0;
 		}
 		.leaflet-container {
-			height: 400px;
 			width: 100%;
 			max-width: 100%;
 			max-height: 100%;
@@ -92,7 +91,7 @@
     }
 
     function setStyle(feature) {
-        console.log("tags " + feature.properties.name + " are a " + feature.properties.numtags);
+        // console.log("tags " + feature.properties.name + " are a " + feature.properties.numtags);
         return {
             fillColor: getColor(feature.properties.numtags),
             weight: 1,
@@ -144,8 +143,16 @@
         }
     });
 
+    var url=window.location.href;
+
+    let domain = url;
+    if (url.includes("://")) {
+        domain = url.split('://')[1];
+    }
+    var subdomain = domain.split('.')[0];
+
     var bloggerdata = $.ajax({
-        url: "https://earthquakeinsights.blogspot.com/feeds/posts/default?alt=json&max-results=0",
+        url: "https://" + subdomain + ".blogspot.com/feeds/posts/default?alt=json&max-results=0",
         dataType: "json",
         success: console.log("Blogger data successfully loaded"),
         error: function(xhr) {
@@ -159,7 +166,7 @@
 
         var map = L.map("map", {
             zoomSnap : 1
-        }).setView([0, 0], 1);
+        }).setView([0, 0], 2);
 
         // var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	    //     maxZoom: 19,
@@ -288,7 +295,7 @@
 
 
         L.easyButton('fa-globe', function(btn, map){
-            map.setView([0,0], 1);
+            map.setView([0,0], 2);
         }).addTo(map);
 
         L.easyButton('fa-home', function(btn, map){

@@ -234,9 +234,11 @@
 
                 $(".list-label-widget-content a").each(function (i, el) {
                     // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
-                    labelText_t = $(el).text();
+                    labelText_t = String($(el).text());
                     labelNum=Number(labelText_t.match(/\d+/g)); 
-                    labelText=labelText_t.match(/[a-zA-Z]+/g);
+                    var labelText_a=labelText_t.match(/[a-zA-Z]+/g);
+                    var labelText=labelText_a.replace(/,/g, " ");
+                    console.log("Comparing " + feature.properties.name + " with " + labelText);
 
                     // Update the feature.properties.numtags value with the number of labels
                     if (labelText == feature.properties.name) {

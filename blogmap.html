@@ -237,7 +237,7 @@
                     labelText_t = String($(el).text());
                     labelNum=Number(labelText_t.match(/\d+/g)); 
                     var labelText_a=labelText_t.match(/[a-zA-Z]+/g);
-                    var labelText=labelText_a.replace(/,/g, " ");
+                    var labelText=labelText_a.toString().replace(/,/g, " ");
                     console.log("Comparing " + feature.properties.name + " with " + labelText);
 
                     // Update the feature.properties.numtags value with the number of labels

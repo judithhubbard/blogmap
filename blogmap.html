@@ -30,6 +30,8 @@
 
     <!-- <script src="https://tectoplot.blogspot.com/feeds/posts/summary?alt=json-in-script&max-results=0&callback=cat"></script> -->
 
+    <!-- # in the style section denotes a div definition -->
+
 	<style>
 		html, body {
 			height: 100%;
@@ -39,6 +41,8 @@
 			width: 100%;
 			max-width: 100%;
 			max-height: 100%;
+            border: 1px solid black;
+            z-index: 0;
 		}
         .info { padding: 6px 8px; font: 14px/16px Arial, Helvetica, sans-serif; background: white; background: rgba(255,255,255,0.8); box-shadow: 0 0 15px rgba(0,0,0,0.2); border-radius: 5px; } .info h4 { margin: 0 0 5px; color: #777; }
         .legend { text-align: left; line-height: 14px; color: #555; } .legend i { width: 30px; height: 14px; float: left; margin-right: 8px; opacity: 0.7; }</style>
@@ -49,12 +53,15 @@
 <body>
 
 <div id="map" style="width: 100%; height: 400px;"></div>
+<div id="autocomplete" style="z-index: 100; margin-bottom: 5px;"></div>
 
 <!-- Map script -->
 <script>
 
     var myblogregions
     var info = L.control();
+
+    var home=[17,22];
 
     <!-- Define some functions -->
 
@@ -166,7 +173,7 @@
 
         var map = L.map("map", {
             zoomSnap : 1
-        }).setView([24, 13], 2);
+        }).setView(home, 2);
 
         // var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 	    //     maxZoom: 19,
@@ -231,6 +238,7 @@
                 var labelNum;
 
                 feature.properties.numtags=0;
+                feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.name
 
                 $(".list-label-widget-content a").each(function (i, el) {
                     // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
@@ -253,6 +261,11 @@
                     mouseout: resetHighlight,
                 });
 
+                console.log("url is " + feature.properties.url + " and href is " + window.location.href);
+                if (window.location.href == feature.properties.url) {
+                    console.log("URL matches with ID " + feature.properties.id);
+                    map.fitBounds(featureLayer.getBounds());
+                }
                 // ' target="_blank" +
 
                 // featureLayer.bindPopup('<a href="' + feature.properties.url + '"' + '>' +  'Go to ' + feature.properties.title + '</a>');
@@ -262,7 +275,7 @@
             // console.log(e)
             // console.log(e.layer)
             if (e.layer.feature.properties.numtags != 0) {
-                window.location.href="https://earthquakeinsights.blogspot.com/search/label/" + e.layer.feature.properties.name;
+                window.location.href="https://" + subdomain + ".blogspot.com/search/label/" + e.layer.feature.properties.name;
             }
         });
 
@@ -297,7 +310,7 @@
 
 
         L.easyButton('fa-globe', function(btn, map){
-            map.setView([24, 13], 2);
+            map.setView(home, 2);
         }).addTo(map);
 
         L.easyButton('fa-home', function(btn, map){
@@ -318,8 +331,8 @@
         // method that we will use to update the control based on feature properties passed
         info.update = function (props) {
             console.log(props);
-            this._div.innerHTML = '<h4>Blog posts per country</h4>' +  (props ?
-                '<b>' + props.feature.properties.name + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? '' : ' - click to read') )
+            this._div.innerHTML = (props ?
+                '<b>' + props.feature.properties.name + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? ' (working on it!)' : ' - click to read') )
                 : '');
         };
 
@@ -334,10 +347,10 @@
             var div = L.DomUtil.create('div', 'info legend'),
                 grades = [0, 1, 5, 20],
                 labels = [];
-
+            div.innerHTML += '<h4>Posts</h4>'
             // loop through our density intervals and generate a label with a colored square for each interval
             for (var i = 0; i < grades.length; i++) {
-                div.innerHTML +=
+                div.innerHTML += 
                     '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
                     grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
             }

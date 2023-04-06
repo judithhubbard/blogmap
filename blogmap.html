@@ -28,8 +28,6 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.css">
     <script src="https://cdn.jsdelivr.net/npm/leaflet-easybutton@2/src/easy-button.js"></script>
 
-    <!-- <script src="https://tectoplot.blogspot.com/feeds/posts/summary?alt=json-in-script&max-results=0&callback=cat"></script> -->
-
     <!-- # in the style section denotes a div definition -->
 
 	<style>
@@ -99,6 +97,30 @@
 
     function setStyle(feature) {
         // console.log("tags " + feature.properties.name + " are a " + feature.properties.numtags);
+
+        var labelNum;
+
+        feature.properties.numtags=0;
+        feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.name
+
+        // console.log($(".list-label-widget-content a"))
+
+        $(".list-label-widget-content a").each(function (i, el) {
+            // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
+            labelText_t = String($(el).text());
+            labelNum=Number(labelText_t.match(/\d+/g)); 
+            var labelText_a=labelText_t.match(/[a-zA-Z]+/g);
+            var labelText=labelText_a.toString().replace(/,/g, " ");
+            // console.log("Comparing " + feature.properties.name + " with " + labelText);
+
+            // Update the feature.properties.numtags value with the number of labels
+            if (labelText == feature.properties.name) {
+                // console.log("Country" + feature.properties.name + "has" + labelNum + "tags");
+                feature.properties.numtags=labelNum;
+            }
+
+        });
+
         return {
             fillColor: getColor(feature.properties.numtags),
             weight: 1,
@@ -120,7 +142,7 @@
             layer.bringToFront();
         }
 
-        console.log(layer);
+        // console.log(layer);
         info.update(layer);
     }
 
@@ -167,12 +189,18 @@
         }
     });
 
+
     /* when().done() SECTION*/
     // Add the variable for each of your AJAX requests to $.when()
     $.when(blogregions, countryregions, bloggerdata).done(function() {
 
+        // check on the tag data now
+        console.log("after data");
+        console.log($(".list-label-widget-content a")[1]);
+
         var map = L.map("map", {
-            zoomSnap : 1
+            zoomSnap : 1,
+            minZoom : 2
         }).setView(home, 2);
 
         // var osm = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -240,17 +268,19 @@
                 feature.properties.numtags=0;
                 feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.name
 
+                // console.log($(".list-label-widget-content a"))
+
                 $(".list-label-widget-content a").each(function (i, el) {
                     // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
                     labelText_t = String($(el).text());
                     labelNum=Number(labelText_t.match(/\d+/g)); 
                     var labelText_a=labelText_t.match(/[a-zA-Z]+/g);
                     var labelText=labelText_a.toString().replace(/,/g, " ");
-                    console.log("Comparing " + feature.properties.name + " with " + labelText);
+                    // console.log("Comparing " + feature.properties.name + " with " + labelText);
 
                     // Update the feature.properties.numtags value with the number of labels
                     if (labelText == feature.properties.name) {
-                        console.log("Country" + feature.properties.name + "has" + labelNum + "tags");
+                        // console.log("Country" + feature.properties.name + "has" + labelNum + "tags");
                         feature.properties.numtags=labelNum;
                     }
 
@@ -261,9 +291,9 @@
                     mouseout: resetHighlight,
                 });
 
-                console.log("url is " + feature.properties.url + " and href is " + window.location.href);
+                // console.log("url is " + feature.properties.url + " and href is " + window.location.href);
                 if (window.location.href == feature.properties.url) {
-                    console.log("URL matches with ID " + feature.properties.id);
+                    console.log("URL matches with country " + feature.properties.name);
                     map.fitBounds(featureLayer.getBounds());
                 }
                 // ' target="_blank" +
@@ -330,15 +360,13 @@
 
         // method that we will use to update the control based on feature properties passed
         info.update = function (props) {
-            console.log(props);
+            // console.log(props);
             this._div.innerHTML = (props ?
                 '<b>' + props.feature.properties.name + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? ' (working on it!)' : ' - click to read') )
                 : '');
         };
 
         info.addTo(map);
-
-
 
         var legend = L.control({position: 'bottomright'});
 
@@ -350,20 +378,38 @@
             div.innerHTML += '<h4>Posts</h4>'
             // loop through our density intervals and generate a label with a colored square for each interval
             for (var i = 0; i < grades.length; i++) {
-                div.innerHTML += 
+                if (i==0) {
+                    div.innerHTML += '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' + grades[i + 1] + '<br>'; 
+                } else if (i == grades.length-1) {
+                    div.innerHTML += 
                     '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
                     grades[i] + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                } else {
+                    div.innerHTML += 
+                    '<i style="background:' + getColor(grades[i] + 1) + '"></i> ' +
+                    (grades[i] + 1) + (grades[i + 1] ? '&ndash;' + grades[i + 1] + '<br>' : '+');
+                }
             }
 
             return div;
         };
 
-
         legend.addTo(map);
         
         // Update the country styles as we have updated the numtags property after first styling
-        map.whenReady(resetcountrystyles);
+       
+        function waitForElement() {
+            if (typeof $(".list-label-widget-content a")[1] !== "undefined") {
+                console.log("Resetting map")
+                console.log($(".list-label-widget-content a")[1])
+                map.whenReady(resetcountrystyles);
+            } else{
+                console.log("Waiting")
+                setTimeout(waitForElement, 250);
+            }
+        }
 
+        waitForElement();
 
     });
 

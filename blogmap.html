@@ -96,26 +96,26 @@
     }
 
     function setStyle(feature) {
-        // console.log("tags " + feature.properties.name + " are a " + feature.properties.numtags);
+        // console.log("tags " + feature.properties.NAME + " are a " + feature.properties.numtags);
 
         var labelNum;
 
         feature.properties.numtags=0;
-        feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.name
+        feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.NAME
 
         // console.log($(".list-label-widget-content a"))
 
         $(".list-label-widget-content a").each(function (i, el) {
-            // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
+            // console.log("comparing" + $(el).text() + "to" + feature.properties.NAME);
             labelText_t = String($(el).text());
             labelNum=Number(labelText_t.match(/\d+/g)); 
             var labelText_a=labelText_t.match(/[a-zA-Z]+/g);
             var labelText=labelText_a.toString().replace(/,/g, " ");
-            // console.log("Comparing " + feature.properties.name + " with " + labelText);
+            // console.log("Comparing " + feature.properties.NAME + " with " + labelText);
 
             // Update the feature.properties.numtags value with the number of labels
-            if (labelText == feature.properties.name) {
-                // console.log("Country" + feature.properties.name + "has" + labelNum + "tags");
+            if (labelText == feature.properties.NAME) {
+                // console.log("Country" + feature.properties.NAME + "has" + labelNum + "tags");
                 feature.properties.numtags=labelNum;
             }
 
@@ -164,7 +164,7 @@
 
     <!-- Countries, low point count geoJSON -->
     var countryregions = $.ajax({
-        url: "https://raw.githubusercontent.com/ahalota/Leaflet.CountrySelect/master/countries.geo.json",
+        url: "https://raw.githubusercontent.com/judithhubbard/blogmap/master/countries_tm.geojson",
         dataType: "json",
         success: console.log("Country data successfully loaded."),
         error: function(xhr) {
@@ -266,21 +266,21 @@
                 var labelNum;
 
                 feature.properties.numtags=0;
-                feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.name
+                feature.properties.url="https://" + subdomain + ".blogspot.com/search/label/" + feature.properties.NAME
 
                 // console.log($(".list-label-widget-content a"))
 
                 $(".list-label-widget-content a").each(function (i, el) {
-                    // console.log("comparing" + $(el).text() + "to" + feature.properties.name);
+                    // console.log("comparing" + $(el).text() + "to" + feature.properties.NAME);
                     labelText_t = String($(el).text());
                     labelNum=Number(labelText_t.match(/\d+/g)); 
                     var labelText_a=labelText_t.match(/[a-zA-Z]+/g);
                     var labelText=labelText_a.toString().replace(/,/g, " ");
-                    // console.log("Comparing " + feature.properties.name + " with " + labelText);
+                    // console.log("Comparing " + feature.properties.NAME + " with " + labelText);
 
                     // Update the feature.properties.numtags value with the number of labels
-                    if (labelText == feature.properties.name) {
-                        // console.log("Country" + feature.properties.name + "has" + labelNum + "tags");
+                    if (labelText == feature.properties.NAME) {
+                        // console.log("Country" + feature.properties.NAME + "has" + labelNum + "tags");
                         feature.properties.numtags=labelNum;
                     }
 
@@ -293,19 +293,19 @@
 
                 // console.log("url is " + feature.properties.url + " and href is " + window.location.href);
                 if (window.location.href == feature.properties.url) {
-                    console.log("URL matches with country " + feature.properties.name);
+                    console.log("URL matches with country " + feature.properties.NAME);
                     map.fitBounds(featureLayer.getBounds());
                 }
                 // ' target="_blank" +
 
                 // featureLayer.bindPopup('<a href="' + feature.properties.url + '"' + '>' +  'Go to ' + feature.properties.title + '</a>');
-                // featureLayer.bindTooltip(feature.properties.name).openTooltip();
+                // featureLayer.bindTooltip(feature.properties.NAME).openTooltip();
             }
         }).addTo(map).on('click', function (e) {
             // console.log(e)
             // console.log(e.layer)
             if (e.layer.feature.properties.numtags != 0) {
-                window.location.href="https://" + subdomain + ".blogspot.com/search/label/" + e.layer.feature.properties.name;
+                window.location.href="https://" + subdomain + ".blogspot.com/search/label/" + e.layer.feature.properties.NAME;
             }
         });
 
@@ -362,7 +362,7 @@
         info.update = function (props) {
             // console.log(props);
             this._div.innerHTML = (props ?
-                '<b>' + props.feature.properties.name + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? ' (working on it!)' : ' - click to read') )
+                '<b>' + props.feature.properties.NAME + '</b><br />' + props.feature.properties.numtags + ( props.feature.properties.numtags == 1 ? ' post - click to read' : ' posts' + ( props.feature.properties.numtags == 0 ? ' (working on it!)' : ' - click to read') )
                 : '');
         };
 
